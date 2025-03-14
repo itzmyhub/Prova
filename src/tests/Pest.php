@@ -6,12 +6,12 @@
 |--------------------------------------------------------------------------
 |
 | The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\ExampleTestCase". Of course, you may
+| case class. By default, that class is "PHPUnit\Framework\BowlingTestCase". Of course, you may
 | need to change it using the "pest()" function to bind a different classes or traits.
 |
 */
 
-pest()->extend(Tests\ExampleTestCase::class)
+pest()->extend(Tests\BowlingTestCase::class)
  // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
