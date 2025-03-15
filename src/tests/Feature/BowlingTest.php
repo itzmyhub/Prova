@@ -10,141 +10,74 @@ beforeEach(function () {
 it('deve contabilizar um lance', function () {
     $result = $this->bowlingPontuationCalc->contabilizarLance();
 
-    expect($result)->toBeInt(1);
+    expect($result)->toBe(1);
 });
 
-it('deve contabilizar uma rodada', function () {
-    $result = $this->bowlingPontuationCalc->contabilizarRodada();
+it('deve retornar o score total do jogo', function () {
+    $result = $this->bowlingPontuationCalc->score();
 
-    expect($result)->toBeInt(2);
+    expect($result)->toBe(0);
 });
 
-it('deve verificar se uma rodada acabou (true case)', function() {
-   $result = $this->bowlingPontuationCalc->verificarTerminoDaRodada();
+it('strike deve somar 10 + as duas próximas rodadas ao score', function () {
+    $this->bowlingPontuationCalc->strike();
 
-   expect($result)->toBeTrue();
+    $result = $this->bowlingPontuationCalc->score();
+
+    expect($result)->toBe(30);
 });
 
-it('deve acrescentar o valor do lance ao score', function () {
-    $result = $this->bowlingPontuationCalc->somaScoreTotal();
+it('spare deve somar 10 (da rodada) + o próximo lance ao score total', function () {
+    $bowling = new BowlingPontuationCalc([7,3, 5]);
 
-    expect($result)->toBeInt(10);
+    $bowling->spare();
+
+    $result = $bowling->score();
+
+    expect($result)->toBe(15);
 });
 
-it('verifica strike no lance', function () {
-   $result = $this->bowlingPontuationCalc->verificaStrike();
+it('rodada sem bonus deve somar a quantidade de pinos derrubados', function (){
+    $bowling = new BowlingPontuationCalc([7,1, 5,3]);
 
-   expect($result)->toBeTrue();
+    $bowling->somarPinosDerrubados();
+
+    $result = $bowling->score();
+
+    expect($result)->toBe(8);
 });
 
-it('verifica spare na rodada', function () {
-   $bowling = new BowlingPontuationCalc([7, 3, 10]);
-   $bowling->contabilizarLance();
-   $result = $bowling->verificaSpare();
+it('deve pontuar 300 em um jogo perfeito', function () {
+    for ($i = 0; $i < 10; $i++)
+        $this->bowlingPontuationCalc->jogarRodada();
 
-   expect($result)->toBeTrue();
+    $result = $this->bowlingPontuationCalc->score();
+    expect($result)->toBe(300);
 });
 
-it('verifica pontuação completa em um jogo perfeito', function () {
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-    $this->bowlingPontuationCalc->contabilizarLance();
-
-    $result = $this->bowlingPontuationCalc->valorTotalDoJogo();
-
-    expect($result)->toBeInt(300);
-});
-
-it('verifica pontuação de jogo com um strike', function () {
-   $bowling = new BowlingPontuationCalc([0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 10, 2,3, 0,0]);
-
-   $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-
-    $result = $bowling->valorTotalDoJogo();
-
-    expect($result)->toBeInt(20);
-});
-
-it('verifica pontuação de jogo com um spare', function () {
-    $bowling = new BowlingPontuationCalc([0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 2,8, 2,3, 0,0]);
-
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-
-    $result = $bowling->valorTotalDoJogo();
-
-    expect($result)->toBeInt(17);
-});
-
-it('verifica pontuação de jogo com com spare e strike', function () {
+it('deve pontuar 133 em um jogo com spare e strike.', function () {
     $bowling = new BowlingPontuationCalc([1,4, 4,5, 6,4, 5,5, 10, 0,1, 7,3, 6,4, 10, 2,8, 6]);
+    for ($i = 0; $i < 10; $i++)
+        $bowling->jogarRodada();
 
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
-    $bowling->contabilizarLance();
+    $result = $bowling->score();
+    expect($result)->toBe(133);
+});
 
-    $result = $bowling->valorTotalDoJogo();
+it('deve pontuar 20 em um Jogo com um strike.', function () {
+    $bowling = new BowlingPontuationCalc([0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 10, 2,3, 0,0 ]);
+    for ($i = 0; $i < 10; $i++)
+        $bowling->jogarRodada();
 
-    expect($result)->toBeInt(133);
+    $result = $bowling->score();
+    expect($result)->toBe(20);
+});
+
+it('deve pontuar 17 em um Jogo com um spare.', function () {
+    $bowling = new BowlingPontuationCalc([0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 2,8, 2,3, 0,0 ]);
+    for ($i = 0; $i < 10; $i++)
+        $bowling->jogarRodada();
+
+    $result = $bowling->score();
+    expect($result)->toBe(17);
 });
