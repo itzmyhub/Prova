@@ -21,6 +21,7 @@ services:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=apiteste
     volumes:
       - db_data:/var/lib/mysql
     networks:

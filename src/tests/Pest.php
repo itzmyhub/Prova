@@ -6,14 +6,17 @@
 |--------------------------------------------------------------------------
 |
 | The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\ExampleTestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
+| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
+| need to change it using the "uses()" function to bind a different classes or traits.
 |
 */
 
-pest()->extend(Tests\ExampleTestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature');
+use Illuminate\Support\Carbon;
+
+uses(
+    Tests\TestCase::class,
+    Illuminate\Foundation\Testing\RefreshDatabase::class,
+)->in('Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -26,8 +29,8 @@ pest()->extend(Tests\ExampleTestCase::class)
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
+expect()->extend('toBeSameDate', function ($date) {
+    return $this->format('Y-m-d') == $date->format('Y-m-d');
 });
 
 /*
@@ -41,7 +44,11 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function matchDate(string|Carbon $date, string $format = 'Y-m-d'): \Mockery\Matcher\Closure
 {
-    // ..
+    if ($date instanceof Carbon) {
+        $date = $date->format($format);
+    }
+
+    return Mockery::on(fn (Carbon $d) => $d->format($format) == $date);
 }
