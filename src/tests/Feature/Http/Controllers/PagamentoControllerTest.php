@@ -11,121 +11,115 @@ describe(PagamentoController::class, function () {
         $response = $this->get(route('pagamentos.index'));
 
         $response->assertStatus(200)
-            ->assertViewIs('welcome');
+            ->assertViewIs('meus_pagamentos');
     });
 
     test('deve conseguir criar um pagamento e retornar para a rota inicial', function () {
+        //Arrange
+        $categoria = Categoria::factory()->create();
+        $pagamento = Pagamento::factory()->naoPago()->make([
+            'categoria_id' => $categoria->id,
+        ]);
 
-        $categorias = Categoria::create(['nome' => 'Categoria 1']);
+        //Act
+        $response = $this->post(route('pagamentos.store'), $pagamento->toArray());
 
-        $this->assertNotNull($categorias->id);
+        //Assert
+        $response->assertRedirect(route('pagamentos.index'));
 
-        $novoPagamento = [
-            'descricao' => "dragao branco de olhos azuis",
-            'valor' => '1000.00',
-            'data' => "2000-01-01",
-            'categoria_id' => $categorias->id,
-            'metodo_pagamento' => 'Pix',
-            'pago' => 0,
-        ];
+        $this->assertDatabaseHas('pagamentos', [
+            'descricao' => $pagamento->descricao,
+            'valor' => $pagamento->valor,
+            'metodo_pagamento' => $pagamento->metodo_pagamento,
+            'categoria_id' => $pagamento->categoria_id,
+            'pago' => $pagamento->pago,
+        ]);
 
-        $this->post(route('pagamentos.store'), $novoPagamento)->assertRedirect(route('pagamentos.index'));
-
-        $ultimoPagamento = Pagamento::latest('id')->first();
-
-        expect($ultimoPagamento)
-            ->descricao->toBe($novoPagamento['descricao'])
-            ->valor->toBe($novoPagamento['valor'])
-            ->metodo_pagamento->toBe($novoPagamento['metodo_pagamento']);
+        $this->assertDatabaseCount('pagamentos', 1);
     });
 
-    test('deve falhar na validação da criação de pagamento', function () {
+    test('deve falhar na validação da criação de um novo pagamento', function () {
+        //Arrange
+        $pagamento = Pagamento::factory()->naoPago()->make([
+            'categoria_id' => 88 ,
+        ]);
 
-        $novoPagamento = [
-            'descricao' => "dragao branco de olhos azuis",
-            'valor' => '1000.00',
-            'data' => "2000-01-01",
-            'categoria_id' => 1, //tenta criar um pagamento com uma categoria inexistente
-            'metodo_pagamento' => 'Pix',
-            'pago' => 0,
-        ];
+        //Act
+        $response = $this->post(route('pagamentos.store'), $pagamento->toArray());
+        $response->assertRedirect(route('pagamentos.index'));
 
-        $this->post(route('pagamentos.store'), $novoPagamento)->assertRedirect(route('pagamentos.index'));
+        //Assert
+        $this->assertDatabaseMissing('pagamentos', [
+            'descricao' => $pagamento->descricao,
+            'valor' => $pagamento->valor,
+            'metodo_pagamento' => $pagamento->metodo_pagamento,
+            'categoria_id' => $pagamento->categoria_id,
+            'pago' => $pagamento->pago,
+        ]);
 
-        $ultimoPagamento = Pagamento::latest('id')->first();
-
-        $this->assertNull($ultimoPagamento);
-
-        expect($ultimoPagamento)
-            ->descricao->not->toBe($novoPagamento['descricao'])
-            ->valor->not->toBe($novoPagamento['valor'])
-            ->metodo_pagamento->not->toBe($novoPagamento['metodo_pagamento']);
+        $this->assertDatabaseCount('pagamentos', 0);
     });
 
     test('deve conseguir atualizar um cadastro de pagamento e então retornar para a rota inicial', function () {
-        $primeiraCategoria = Categoria::create(['nome' => 'Categoria 1']);
-        $segundaCategoria = Categoria::create(['nome' => 'Categoria 2']);
-        $this->assertNotNull($primeiraCategoria->id);
-        $this->assertNotNull($segundaCategoria->id);
-        $pagamento = [
-            'descricao' => "dragao branco de olhos azuis",
-            'valor' => '1000.00',
-            'data' => "2000-01-01",
-            'categoria_id' => $primeiraCategoria->id,
-            'metodo_pagamento' => 'Pix',
-            'pago' => 0,
-        ];
-
-        $pagamento = Pagamento::create($pagamento);
+        //Arrange
+        $categorias = Categoria::factory(2)->create();
+        $pagamento = Pagamento::factory()->naoPago()->create([
+            'categoria_id' => $categorias[0]->id,
+        ]);
 
         $request = [
             'metodo_pagamento' => 'Cartão Amazon',
-            'categoria_id' => $segundaCategoria->id,
+            'categoria_id' => $categorias[1]->id,
             'pago' => 1
         ];
 
-        $this->put(route('pagamento.update', ['id' => $pagamento['id']]), $request)->assertRedirect(route('pagamentos.index'));
+        //Act
+        $response = $this->put(route('pagamento.update', $pagamento), $request);
 
-        $pagamentoAtualizado = Pagamento::latest('id')->first();
+        //Assert
+        $response->assertRedirect(route('pagamentos.index'));
 
-        expect($pagamentoAtualizado)
-            ->metodo_pagamento->toBe($request['metodo_pagamento'])
-            ->categoria_id->toBe($request['categoria_id'])
-            ->pago->toBe($request['pago']);
+        $this->assertDatabaseHas('pagamentos', [
+            'id' => $pagamento->id,
+            'descricao' => $pagamento->descricao,
+            'valor' => $pagamento->valor,
+            'metodo_pagamento' => $request['metodo_pagamento'],
+            'categoria_id' => $request['categoria_id'],
+            'pago' => $request['pago'],
+        ]);
 
+        $this->assertDatabaseCount('pagamentos', 1);
     });
 
     test('deve falhar na validação e não realizar a atualização dos dados', function () {
-        $primeiraCategoria = Categoria::create(['nome' => 'Categoria 1']);
-
-        $this->assertNotNull($primeiraCategoria->id);
-        $pagamento = [
-            'descricao' => "dragao branco de olhos azuis",
-            'valor' => '1000.00',
-            'data' => "2000-01-01",
-            'categoria_id' => $primeiraCategoria->id,
-            'metodo_pagamento' => 'Pix',
-            'pago' => '0',
-        ];
-
-        $pagamento = Pagamento::create($pagamento);
+        //Arrange
+        $categoria = Categoria::factory()->create();
+        $pagamento = Pagamento::factory()->naoPago()->create([
+            'categoria_id' => $categoria->id,
+        ]);
 
         $request = [
-            'metodo_pagamento' => 'Cartão Amazon',
-            'categoria_id' => 2, // tenta atualizar com uma categoria inexistente no banco de dados
+            'metodo_pagamento' => 'cartao nubank',
+            'categoria_id' => $categoria->id,
             'pago' => 1
         ];
 
-        $this->put(route('pagamento.update', ['id' => $pagamento['id']]), $request)->assertRedirect(route('pagamentos.index'));
+        //Act
+        $response = $this->put(route('pagamento.update', $pagamento), $request);
 
-        $pagamentoAtualizado = Pagamento::latest('id')->first();
+        //Assert
+        $response->assertRedirect(route('pagamentos.index'));
+        $this->assertDatabaseMissing('pagamentos', [
+            'id' => $pagamento->id,
+            'descricao' => $pagamento->descricao,
+            'valor' => $pagamento->valor,
+            'metodo_pagamento' => $request['metodo_pagamento'],
+            'categoria_id' => $request['categoria_id'],
+            'pago' => $request['pago'],
+        ]);
 
-        expect($pagamentoAtualizado)
-            ->metodo_pagamento->not->toBe($request['metodo_pagamento'])
-            ->categoria_id->not->toBe($request['categoria_id'])
-            ->pago->not->toBe($request['pago']);
+        $this->assertDatabaseCount('pagamentos', 1);
     });
-
 });
 
 

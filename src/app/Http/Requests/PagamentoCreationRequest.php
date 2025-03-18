@@ -14,7 +14,10 @@ class PagamentoCreationRequest extends FormRequest
             'descricao' => ['required', 'string'],
             'valor' => ['required', 'numeric', 'min:1'],
             'data' => ['required', 'date'],
-            'categoria_id' => ['required', 'exists:App\Models\Categoria,id'],
+            'categoria_id' => [
+                'required',
+                'exists:categoria,id',
+            ],
             'metodo_pagamento' => [
                 'required',
                 Rule::enum(MetodoPagamento::class),
