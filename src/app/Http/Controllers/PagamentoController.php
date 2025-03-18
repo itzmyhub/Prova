@@ -15,12 +15,12 @@ class PagamentoController extends Controller
     {
         $pagamentos = Pagamento::with('categoria')->get();
         $categorias = Categoria::all();
-        return view('meus_pagamentos', compact('pagamentos', 'categorias'));
+        return view('meus_pagamentos', compact(['pagamentos', 'categorias']));
     }
 
     public function store(PagamentoCreationRequest $request)
     {
-        Pagamento::create($request->toArray());
+        Pagamento::create($request->validated());
 
         return redirect(route('pagamentos.index'))->with('success', 'Pagamento criado com sucesso!');
     }
