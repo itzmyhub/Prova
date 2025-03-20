@@ -23,7 +23,7 @@
                         <a class="nav-link active" aria-current="page" href="#">Pagamentos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Parcelamentos</a>
+                        <a class="nav-link" href="{{route('categoria.show', $categorias)}}">Categorias</a>
                     </li>
                 </ul>
             </div>
@@ -46,10 +46,10 @@
             </h2>
             <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
-                    <form action="{{ route('pagamentos.store') }} " method="POST">
+                    <form action="{{ route('pagamento.store') }} " method="POST">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="payment_description"> </label>
+                                <label for="payment_description">Descrição</label>
                                 <input type="text" class="form-control @error('descricao') is-invalid @enderror"  id="payment_description" name="descricao" value="{{old('descricao')}}">
                                 @error('descricao')
                                 <div class="invalid-feedback">
@@ -58,7 +58,7 @@
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="payment_amount">Amount</label>
+                                <label for="payment_amount">Valor</label>
                                 <input type="text" class="form-control @error('valor') is-invalid @enderror"  id="payment_amount" name="valor" value="{{old('valor')}}">
                                 @error('valor')
                                 <div class="invalid-feedback">
@@ -67,7 +67,7 @@
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="payment_date">Date</label>
+                                <label for="payment_date">Data</label>
                                 <input type="date" class="form-control @error('data') is-invalid @enderror"  id="payment_date" name="data" value="{{old('data')}}">
                                 @error('data')
                                 <div class="invalid-feedback">
@@ -80,10 +80,10 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="payment_method">Method</label>
+                                <label for="payment_method">Método de Pagamento</label>
                                 <select id="payment_method" name="metodo_pagamento" class="form-select @error('metodo_pagamento') is-invalid @enderror"
                                         aria-label="Default select example">
-                                    <option {{old('metodo_pagamento') == null ? 'selected' : ''}}>Open this select menu</option>
+                                    <option {{old('metodo_pagamento') == null ? 'selected' : ''}}>Abrir Menu de Seleção</option>
                                     <option value="Pix" {{old('metodo_pagamento') == 'Pix' ? 'selected' : ''}}>Pix</option>
                                     <option value="Cartão Black" {{old('metodo_pagamento') == 'Cartão Black' ? 'selected' : ''}}>Cartão black</option>
                                     <option value="Cartão Amazon" {{old('metodo_pagamento') == 'Cartão Amazon' ? 'selected' : ''}}>Cartão Amazon</option>
@@ -96,10 +96,10 @@
                                 @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="category">Category</label>
+                                <label for="category">Categoria</label>
                                 <select id="category" name="categoria_id" class="form-select @error('categoria_id') is-invalid @enderror"
                                         aria-label="Default select example">
-                                    <option {{old('categoria_id') == null ? 'selected' : ''}}>Open this select menu</option>
+                                    <option {{old('categoria_id') == null ? 'selected' : ''}}>Abrir Menu de Seleção</option>
                                     @foreach ($categorias as $categoria)
                                     <option value="{{$categoria->id}}" {{old('categoria_id') == $categoria->id ? 'selected' : ''}}>{{$categoria->nome}}</option>
                                     @endforeach
@@ -121,7 +121,7 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
                         </div>
                     </form>
                 </div>
@@ -134,11 +134,11 @@
     <table class="table">
         <thead>
         <tr>
-            <th scope="col">Description</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Date</th>
-            <th scope="col">Method</th>
-            <th scope="col">Category</th>
+            <th scope="col">Descrição</th>
+            <th scope="col">Valor</th>
+            <th scope="col">Data</th>
+            <th scope="col">Método de Pagamento</th>
+            <th scope="col">Categoria</th>
             <th scope="col">Pago</th>
         </tr>
         </thead>
@@ -149,28 +149,26 @@
             <td>{{$pagamento->valor}}</td>
             <td>{{$pagamento->data}}</td>
 
-            <form action="{{ route('pagamento.update', $pagamento->id) }}" method="POST">
+            <form id="updateForm" action="{{ route('pagamento.update', $pagamento) }}" method="POST">
                 @csrf
                 @method('PUT')
-
             <td>
-
                 <select name="metodo_pagamento" class="form-select"
                         aria-label="Default select example">
                     <option selected>{{ucwords($pagamento->metodo_pagamento)}}</option>
-                    @if($pagamento->metodo_pagamento != 'pix')
+                    @if($pagamento->metodo_pagamento != 'Pix')
                         <option value="Pix">Pix</option>
                     @endif
 
-                    @if($pagamento->metodo_pagamento != 'cartao black')
+                    @if($pagamento->metodo_pagamento != 'Cartão Black')
                         <option value="Cartão Black">Cartão black</option>
                     @endif
 
-                    @if($pagamento->metodo_pagamento != 'cartao amazon')
+                    @if($pagamento->metodo_pagamento != 'Cartão Amazon')
                         <option value="Cartão Amazon">Cartão Amazon</option>
                     @endif
 
-                    @if($pagamento->metodo_pagamento != 'cartao inter')
+                    @if($pagamento->metodo_pagamento != 'Cartão Inter')
                         <option value="Cartão Inter">Cartão Inter</option>
                     @endif
                 </select>
@@ -192,10 +190,24 @@
                     <input class="form-check-input" type="checkbox" role="switch" name="pago" {{$pagamento->pago == 1 ? 'checked' : ''}} value="1">
                 </div>
             </td>
-
-            <td>
-                <button type="submit" class="update-btn">Atualizar</button>
-            </td>
+                <td>
+                    <div class="d-flex justify-content-between">
+                        <button id="updateBtn" type="submit" class="btn btn-secondary p-1">
+                            <i class="bi bi-pencil"></i> Atualizar
+                        </button>
+                    </div>
+                </td>
+            </form>
+            <form id="deleteForm" action="{{ route('pagamento.destroy', $pagamento) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <td>
+                    <div class="d-flex justify-content-between">
+                        <button id="deleteBtn" type="submit" class="btn btn-danger p-1">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
+                    </div>
+                </td>
             </form>
         </tr>
         @endforeach
@@ -213,6 +225,7 @@
         const paymentDateInput = document.getElementById('date');
         paymentDateInput.value = new Date().toLocaleString('pt-BR', {timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone});
     }
+
 </script>
 
 

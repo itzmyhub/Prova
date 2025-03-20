@@ -48,4 +48,10 @@ class PagamentoController extends Controller
 
         return redirect()->back()->with('success', 'Pagamento atualizado com sucesso!');
     }
+
+    public function destroy(Pagamento $pagamento) {
+        $pagamento->delete();
+
+        return redirect(route('pagamentos.index'))->with('success', 'Pagamento removido com sucesso!');
+    }
 }

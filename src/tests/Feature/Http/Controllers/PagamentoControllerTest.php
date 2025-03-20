@@ -8,6 +8,7 @@ use App\Models\Pagamento;
 
 describe(PagamentoController::class, function () {
     test('deve conseguir renderizar a rota inicial', function () {
+
         $response = $this->get(route('pagamentos.index'));
 
         $response->assertStatus(200)
@@ -22,7 +23,7 @@ describe(PagamentoController::class, function () {
         ]);
 
         //Act
-        $response = $this->post(route('pagamentos.store'), $pagamento->toArray());
+        $response = $this->post(route('pagamento.store'), $pagamento->toArray());
 
         //Assert
         $response->assertRedirect(route('pagamentos.index'));
@@ -45,7 +46,7 @@ describe(PagamentoController::class, function () {
         ]);
 
         //Act
-        $response = $this->post(route('pagamentos.store'), $pagamento->toArray());
+        $response = $this->post(route('pagamento.store'), $pagamento->toArray());
         $response->assertRedirect(route('pagamentos.index'));
 
         //Assert
@@ -57,7 +58,7 @@ describe(PagamentoController::class, function () {
             'pago' => $pagamento->pago,
         ]);
 
-        $this->assertDatabaseCount('pagamentos', 0);
+        $this->assertDatabaseEmpty('pagamentos');
     });
 
     test('deve conseguir atualizar um cadastro de pagamento e então retornar para a rota inicial', function () {
@@ -119,6 +120,29 @@ describe(PagamentoController::class, function () {
         ]);
 
         $this->assertDatabaseCount('pagamentos', 1);
+    });
+
+    test('deve apagar um registro e em seguida retornar para a página inicial', function () {
+        //Arrange
+        $categoria = Categoria::factory()->create();
+        $pagamento = Pagamento::factory()->naoPago()->create([
+            'categoria_id' => $categoria->id,
+        ]);
+
+        //Act
+        $response = $this->delete(route('pagamento.destroy', $pagamento));
+
+        //Assert
+        $response->assertRedirect(route('pagamentos.index'));
+        $this->assertDatabaseMissing('pagamentos', [
+            'id' => $pagamento->id,
+            'descricao' => $pagamento->descricao,
+            'valor' => $pagamento->valor,
+            'metodo_pagamento' => $pagamento->metodo_pagamento,
+            'categoria_id' => $pagamento->categoria_id,
+            'pago' => $pagamento->pago,
+        ]);
+        $this->assertDatabaseEmpty('pagamentos');
     });
 });
 
