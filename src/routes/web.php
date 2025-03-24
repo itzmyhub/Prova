@@ -10,5 +10,5 @@ Route::put('/pagamento/{pagamento}', [PagamentoController::class, 'update'])->na
 Route::delete('/pagamento/{pagamento}', [PagamentoController::class, 'destroy'])->name('pagamento.destroy');
 
 Route::post('/categoria', [CategoriaController::class, 'store'])->name('categoria.store');
-Route::get('/categorias/criar', [CategoriaController::class, 'show'])->name('categoria.show');
+Route::get('/categoria/criar', [CategoriaController::class, 'show'])->name('categoria.show');
 
